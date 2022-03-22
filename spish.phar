@@ -177,6 +177,7 @@ class gitInfo extends script_object{
 		if(VERSION<$lastV){
 			$this->newline()->printStyle("Release ".$lastV." disponible","brown")->newline();
 		}
+		return $this;
 	}
 	private function getInfoUpdate(){
 		$url="https://api.github.com/repos/".GIT."/releases/latest";
