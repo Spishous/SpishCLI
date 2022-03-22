@@ -2,7 +2,7 @@
 <?php
 define("GIT","Spishous/SpishCLI");
 define("CLI", "spish");
-define("VERSION","1.0.6");
+define("VERSION","1.0.7");
 define("FOLDER", getcwd());
 define("CLIDIR", dirname(__FILE__));
 define("ARGV", $argv);
@@ -10,9 +10,8 @@ define("ARGV", $argv);
 class main extends command{
 	public function main($argv=ARGV) {
 		$argv[1]=$argv[1]??"";
-        switch($argv[1]){
+        switch(strtolower($argv[1])){
 			case "-v":
-			case "-V":
 			case "-version":
 				$this->version()->newUpdatePublish();
 			break;
@@ -145,22 +144,23 @@ class script_object {
     public function showKey(){
         system('stty echo');
     }
-	    public function inputbool($prompt = '') {
+	public function inputbool($prompt = '') {
 		$prompt && print $prompt." ";
 		$this->printStyle("(y/n) ","green");
-		$bool=$this->input();
-		if($bool!="n"&&$bool!="y"&&$bool!="no"&&$bool!="yes"){
+		$bool=strtolower($this->input());
+		if($bool!=="n"&&$bool!=="y"&&$bool!=="no"&&$bool!=="yes"){
 			$bool=$this->inputbool();
 		}
-		if($bool=="n"||$bool=="no"){
-			return false;
+		if($bool=="yes"||$bool=="y"){
+			return true;
 		}
-        return true;
+        return false;
     }
     public function input($prompt = '') {
         $prompt && print $prompt;
 		$line=str_replace("
 ","",fgets(STDIN));
+		$line=trim($line);
         return $line;
     }
 }
