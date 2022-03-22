@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
 define("GIT","Spishous/SpishCLI");
-define("VERSION","1.0.3");
+define("VERSION","1.0.4");
 define("FOLDER", getcwd());
 define("CLI", dirname(__FILE__));
 define("ARGV", $argv);
 
-class main extends gitInfo{
+class main extends command{
 	public function main($argv=ARGV) {
 		$argv[1]=$argv[1]??"";
         switch($argv[1]){
@@ -20,6 +20,9 @@ class main extends gitInfo{
 			break;
 			case "create":
 				$this->create($argv);
+			break;
+			case "a":
+				$this->printStyle("azer","brown");
 			break;
 			case "uninstall":
 				$this->uninstall();
@@ -40,84 +43,11 @@ class main extends gitInfo{
 		}
 		$this->newline()->newline();
 	}
-
-	public function version(){
-		$this->print("current version ")->printStyle(VERSION,"green","",true);
-	}
-	public function help(){
-		$this->newline()->printStyle("   LISTE DES COMMANDES   ","black","yellow")->newline()->newline();
-		$this->printStyle("  -version ","green","",true)->print("           Donne la version actuelle")->newline();
-		$this->printStyle("  create ","green","",true)->print("             Créer un nouveau projet");
-	}
-	public function create($argv){
-			$this->clear();
-			$this->printStyle("[    New Project    ]","dark_gray","",true)->newline()->newline();
-			$name=$this->printStyle("Project name : ","yellow")->input();
-			$path=FOLDER.'\\'.$name;
-			if($this->printStyle("Create project in ","yellow")->printStyle($path,"yellow","",true,true,true)->printStyle(" ? ","yellow")->inputbool()){
-				//$pathProject=$this->input("path: ");
-				$this->generateProject($name,$path);
-			}else{
-				$this->newline()->printStyle("ø Cancelling","red");
-				//$pathProject=$this->print("path: ".FOLDER.'\\'.$name)->newline();
-			}
-	}
-	private function generateProject($name,$path){
-		if (!file_exists($path)) {
-			mkdir($path, 0777, true);
-			$this->newline()->printStyle("√ New project created","green");
-			return true;
-			}
-			$this->newline()->printStyle("ø Cancelling, this path is already used","red");
-			return false;
-	}
-	private function iniSystemPath(){
-		$a='"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path';
-		$b='reg query '.$a;
-		$handle = popen($b, 'r');
-		usleep(100);
-		$r = fread($handle, 2096);
-		$sysPath=trim(explode("    ",$r)[3]??"");
-		pclose($handle);
-		if(!str_contains($sysPath, CLI."\;")&&!str_contains(exec('echo %path%'), CLI."\;")){
-			$sysPath.=CLI."\;";
-			if($sysPath[strlen($sysPath)-1]==";"){
-				exec('reg add '.$a.' /d "'.$sysPath.'" /f');
-				exec('setx /m PATH "'.$sysPath.'"');
-				exec('set path="'.$sysPath.'"');
-				echo "Command CLI installed\n";
-				system("pause");
-				return true;
-			}
-		}
-		return false;
-	}
-	private function uninstall(){
-		$a='"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path';
-		$b='reg query '.$a;
-		$handle = popen($b, 'r');
-		usleep(100);
-		$r = fread($handle, 2096);
-		$sysPath=trim(explode("    ",$r)[3]);
-		pclose($handle);
-		if(str_contains($sysPath, CLI."\;")){
-			$sysPath=str_replace(CLI."\;","",$sysPath);
-			if($sysPath[strlen($sysPath)-1]==";"){
-				exec('reg add '.$a.' /d "'.$sysPath.'" /f');
-				exec('setx /m PATH "'.$sysPath.'"');
-				system('set path="'.$sysPath.'"');
-				echo "Command CLI uninstalled :(\n";
-				return true;
-			}
-		}
-		return false;
-	}
 }
 
 class script_object {
     public $foreground_colors = array();
     public $background_colors = array();
-
     public function __construct($argv=ARGV) {
         // Set up shell colors
         $this->foreground_colors['black'] = '0;30';
@@ -256,6 +186,79 @@ class gitInfo extends script_object{
         return $json;
 	}
 }
+class command extends gitInfo{
+public function version(){
+		$this->print("current version ")->printStyle(VERSION,"green","",true);
+	}
+	public function help(){
+		$this->newline()->printStyle("   LISTE DES COMMANDES   ","black","yellow")->newline()->newline();
+		$this->printStyle("  -version ","green","",true)->print("           Donne la version actuelle")->newline();
+		$this->printStyle("  create ","green","",true)->print("             Créer un nouveau projet");
+	}
+	public function create($argv){
+			$this->clear();
+			$this->printStyle("[    New Project    ]","dark_gray","",true)->newline()->newline();
+			$name=$this->printStyle("Project name : ","yellow")->input();
+			$path=FOLDER.'\\'.$name;
+			if($this->printStyle("Create project in ","yellow")->printStyle($path,"yellow","",true,true,true)->printStyle(" ? ","yellow")->inputbool()){
+				//$pathProject=$this->input("path: ");
+				$this->generateProject($name,$path);
+			}else{
+				$this->newline()->printStyle("ø Cancelling","red");
+				//$pathProject=$this->print("path: ".FOLDER.'\\'.$name)->newline();
+			}
+	}
+	private function generateProject($name,$path){
+		if (!file_exists($path)) {
+			mkdir($path, 0777, true);
+			$this->newline()->printStyle("√ New project created","green");
+			return true;
+			}
+			$this->newline()->printStyle("ø Cancelling, this path is already used","red");
+			return false;
+	}
+	private function iniSystemPath(){
+		$a='"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path';
+		$b='reg query '.$a;
+		$handle = popen($b, 'r');
+		usleep(100);
+		$r = fread($handle, 2096);
+		$sysPath=trim(explode("    ",$r)[3]??"");
+		pclose($handle);
+		if(!str_contains($sysPath, CLI."\;")&&!str_contains(exec('echo %path%'), CLI."\;")){
+			$sysPath.=CLI."\;";
+			if($sysPath[strlen($sysPath)-1]==";"){
+				exec('reg add '.$a.' /d "'.$sysPath.'" /f');
+				exec('setx /m PATH "'.$sysPath.'"');
+				exec('set path="'.$sysPath.'"');
+				echo "Command CLI installed\n";
+				system("pause");
+				return true;
+			}
+		}
+		return false;
+	}
+	private function uninstall(){
+		$a='"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path';
+		$b='reg query '.$a;
+		$handle = popen($b, 'r');
+		usleep(100);
+		$r = fread($handle, 2096);
+		$sysPath=trim(explode("    ",$r)[3]);
+		pclose($handle);
+		if(str_contains($sysPath, CLI."\;")){
+			$sysPath=str_replace(CLI."\;","",$sysPath);
+			if($sysPath[strlen($sysPath)-1]==";"){
+				exec('reg add '.$a.' /d "'.$sysPath.'" /f');
+				exec('setx /m PATH "'.$sysPath.'"');
+				system('set path="'.$sysPath.'"');
+				echo "Command CLI uninstalled :(\n";
+				return true;
+			}
+		}
+		return false;
+	}
+}
 class update extends gitInfo{
 	public function __construct(){
 		parent::__construct();
@@ -266,10 +269,10 @@ class update extends gitInfo{
 	public function getUpdate(){
 		$lastV=$this->getLastVersion();
 		if(VERSION>=$lastV){
-			$this->printStyle("Votre possedez deja la version la plus recente","green")->print(" (".VERSION.")");
+			$this->printStyle("Votre possedez deja la version la plus recente","brown")->print(" (".VERSION.")");
 			return true;
 		}else{
-			$this->print("Release ".$lastV." disponible")->newline()->printStyle(" Mise a jour en cours..","yellow");
+			$this->printStyle("Release ".$lastV." disponible","brown")->newline()->printStyle(" Mise a jour en cours..","yellow");
 			$this->newline()->printStyle(" Telechargement..","yellow");
 			if(!$this->downloadUpdate($lastV)){
 				return false;
