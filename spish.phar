@@ -1,12 +1,13 @@
 #!/usr/bin/env php
 <?php
 define("GIT","Spishous/SpishCLI");
-define("VERSION","1.0.1");
+define("VERSION","1.0.2");
 define("FOLDER", getcwd());
 define("CLI", dirname(__FILE__));
+define("ARGV", $argv);
 
-final class main extends script_object{
-	public function main($argv) {
+class main extends gitInfo{
+	public function main($argv=ARGV) {
 		$argv[1]=$argv[1]??"";
         switch($argv[1]){
 			case "-v":
@@ -27,9 +28,7 @@ final class main extends script_object{
 				$this->iniSystemPath();
 			break;
 			case "update":
-				if(!$this->update()){
-					$this->print("\r")->printStyle("Erreur lors de la mise a jour    ","red")->newline();
-				};
+				new update();
 			break;
 			default:
 				if(strlen($argv[1])>0){
@@ -41,79 +40,9 @@ final class main extends script_object{
 		}
 		$this->newline()->newline();
 	}
-	
-	public function getLastVersion(){
-		$json=$this->getInfoUpdate();
-		return $json["tag_name"]??VERSION;
-	}
-	public function getNameRelease(){
-		$json=$this->getInfoUpdate();
-		return str_replace(" ","-",$json["name"])??"";
-	}
-	private function getInfoUpdate(){
-		$url="https://api.github.com/repos/".GIT."/releases";
-		$ua="node.js";
-		$ch = curl_init();
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch,CURLOPT_USERAGENT,$ua);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        $head = curl_exec($ch);
-        curl_close($ch);
-        $json=json_decode($head,true);
-        return $json=$json[sizeof($json)-1];
-	}
+
 	public function version(){
 		$this->print("current version ")->printStyle(VERSION,"green","",true);
-	}
-	public function update(){
-		$lastV=$this->getLastVersion();
-		if(VERSION>=$lastV){
-			$this->printStyle("Votre possedez deja la version la plus recente","green")->print(" (".VERSION.")");
-			return true;
-		}else{
-			$this->print("Release ".$lastV." disponible")->newline()->printStyle(" Mise a jour en cours..","yellow");
-			$this->newline()->printStyle(" Telechargement..","yellow");
-			if(!$this->downloadUpdate($lastV)){
-				return false;
-			}
-			$this->newline()->printStyle(" Installation..","yellow");
-			if(!$this->extractUpdate($lastV)){
-				return false;
-			}
-			$this->newline()->printStyle("Mise a jour termine","green");
-			return true;
-		}
-	}
-	private function downloadUpdate($version){
-		$file = 'https://github.com/'.GIT.'/archive/refs/tags/'.$version.'.zip';
-		$tmp = $_SERVER["TEMP"].'\tmp_update.zip';
-		if (!copy($file, $tmp)) return false;
-		return true;
-	}
-	private function extractUpdate(){
-		$tmp = $_SERVER["TEMP"].'\tmp_update.zip';
-		$destination_dir=dirname(__FILE__);
-		$zip = new ZipArchive();
-		if ($zip->open($tmp)) {
-		    for ($i = 0; $i < $zip->numFiles; $i++) {
-		        if (!$zip->extractTo($destination_dir, array($zip->getNameIndex($i)))) return false;
-		    }
-		    $zip->close();
-		    // Clear zip from local storage:
-		    unlink($tmp);
-		    $nameRelease=$this->getNameRelease();
-		    $this->moveFileToParent($destination_dir."\\".$nameRelease);
-		    return true;
-		}
-		return false;
-	}
-	private function moveFileToParent($folderMoveUpPath){
-		$scandir=scandir($folderMoveUpPath);
-		for($i=2,$l=sizeof($scandir);$i<$l;$i++){
-			rename($folderMoveUpPath."\\".$scandir[$i], $folderMoveUpPath."\\..\\".$scandir[$i]);
-		}
-		rmdir($folderMoveUpPath);
 	}
 	public function help(){
 		$this->newline()->printStyle("   LISTE DES COMMANDES   ","black","yellow")->newline()->newline();
@@ -189,7 +118,7 @@ class script_object {
     public $foreground_colors = array();
     public $background_colors = array();
 
-    public function __construct($argv) {
+    public function __construct($argv=ARGV) {
         // Set up shell colors
         $this->foreground_colors['black'] = '0;30';
         $this->foreground_colors['dark_gray'] = '1;30';
@@ -304,4 +233,93 @@ class script_object {
         return $line;
     }
 }
-new main($argv);
+class gitInfo extends script_object{
+	public function getLastVersion(){
+		$json=$this->getInfoUpdate();
+		return $json["tag_name"]??VERSION;
+	}
+	public function getNameRelease(){
+		$json=$this->getInfoUpdate();
+		return str_replace(" ","-",$json["name"])??"";
+	}
+	private function getInfoUpdate(){
+		$url="https://api.github.com/repos/".GIT."/releases";
+		$ua="node.js";
+		$ch = curl_init();
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch,CURLOPT_USERAGENT,$ua);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $head = curl_exec($ch);
+        curl_close($ch);
+        $json=json_decode($head,true);
+        return $json=$json[sizeof($json)-1];
+	}
+}
+class update extends gitInfo{
+	public function __construct(){
+		parent::__construct();
+		if(!$this->getUpdate()){
+			$this->print("\r")->printStyle("Erreur lors de la mise a jour    ","red")->newline();
+		};
+	}
+	public function getUpdate(){
+		$lastV=$this->getLastVersion();
+		if(VERSION>=$lastV){
+			$this->printStyle("Votre possedez deja la version la plus recente","green")->print(" (".VERSION.")");
+			return true;
+		}else{
+			$this->print("Release ".$lastV." disponible")->newline()->printStyle(" Mise a jour en cours..","yellow");
+			$this->newline()->printStyle(" Telechargement..","yellow");
+			if(!$this->downloadUpdate($lastV)){
+				return false;
+			}
+			$this->newline()->printStyle(" Installation..","yellow");
+			if(!$this->extractUpdate($lastV)){
+				return false;
+			}
+			$this->newline()->printStyle("Mise a jour termine","green");
+			return true;
+		}
+	}
+	private function downloadUpdate($version){
+		$file = 'https://github.com/'.GIT.'/archive/refs/tags/'.$version.'.zip';
+		$tmp = $_SERVER["TEMP"].'\tmp_update.zip';
+		if (!copy($file, $tmp)) return false;
+		return true;
+	}
+	private function extractUpdate(){
+		$tmp = $_SERVER["TEMP"].'\tmp_update.zip';
+		$destination_dir=dirname(__FILE__);
+		$zip = new ZipArchive();
+		if ($zip->open($tmp)) {
+		    for ($i = 0; $i < $zip->numFiles; $i++) {
+		        if (!$zip->extractTo($destination_dir, array($zip->getNameIndex($i)))) return false;
+		    }
+		    $zip->close();
+		    // Clear zip from local storage:
+		    unlink($tmp);
+		    $nameRelease=$this->getNameRelease();
+		    $this->replaceFile($destination_dir,$nameRelease);
+		    exec("php ".$destination_dir."\\update.phar");
+		    return true;
+		}
+		return false;
+	}
+	private function replaceFile($destination_dir,$nameRelease){
+		$update=fopen($destination_dir."\\update.phar", 'w+');
+		$content='<?php
+	function moveFileToParent($folderMoveUpPath){
+		$scandir=scandir($folderMoveUpPath);
+		for($i=2,$l=sizeof($scandir);$i<$l;$i++){
+			rename($folderMoveUpPath."\\\".$scandir[$i], $folderMoveUpPath."\\\..\\\".$scandir[$i]);
+		}
+		rmdir($folderMoveUpPath);
+	}
+	moveFileToParent("'.$destination_dir.'\\'.$nameRelease.'");
+	unlink("'.$destination_dir.'\\\update.phar");';
+		fwrite($update, $content);
+		fclose($update);
+	}
+}
+new main();
