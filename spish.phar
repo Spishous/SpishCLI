@@ -121,14 +121,10 @@ class script_object {
     }
 
     // Returns all foreground color names
-    public function getForegroundColors() {
-        return array_keys($this->foreground_colors);
-    }
+    public function getForegroundColors() { return array_keys($this->foreground_colors); }
 
     // Returns all background color names
-    public function getBackgroundColors() {
-        return array_keys($this->background_colors);
-    }
+    public function getBackgroundColors() { return array_keys($this->background_colors); }
     public function clear(){
         echo "\n";
         echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
@@ -138,12 +134,8 @@ class script_object {
         echo "\n";
 		return $this;
     }
-    public function hideKey(){
-        system('stty -echo');
-    }
-    public function showKey(){
-        system('stty echo');
-    }
+    public function hideKey(){ system('stty -echo'); }
+    public function showKey(){ system('stty echo'); }
 	public function inputbool($prompt = '') {
 		$prompt && print $prompt." ";
 		$this->printStyle("(y/n) ","green");
@@ -158,8 +150,7 @@ class script_object {
     }
     public function input($prompt = '') {
         $prompt && print $prompt;
-		$line=str_replace("
-","",fgets(STDIN));
+		$line=fgets(STDIN);
 		$line=trim($line);
         return $line;
     }
@@ -195,7 +186,7 @@ class gitInfo extends script_object{
 	}
 }
 class command extends gitInfo{
-public function version(){
+	public function version(){
 		$this->print("current version ")->printStyle(VERSION,"green","",true);
 		return $this;
 	}
