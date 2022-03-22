@@ -1,9 +1,10 @@
 #!/usr/bin/env php
 <?php
 define("GIT","Spishous/SpishCLI");
-define("VERSION","1.0.5");
+define("CLI", "spish");
+define("VERSION","1.0.6");
 define("FOLDER", getcwd());
-define("CLI", dirname(__FILE__));
+define("CLIDIR", dirname(__FILE__));
 define("ARGV", $argv);
 
 class main extends command{
@@ -35,7 +36,7 @@ class main extends command{
 			break;
 			default:
 				if(strlen($argv[1])>0){
-					$this->printStyle("Commande inconnu","red")->newline();
+					$this->printStyle(" Commande inconnue","red")->newline()->print("(Utilisez \"".CLI." help\" pour connaitre la liste des commandes)");
 				}elseif(!$this->iniSystemPath()){
 					$this->help();
 				}
@@ -200,8 +201,10 @@ public function version(){
 	}
 	public function help(){
 		$this->newline()->printStyle("   LISTE DES COMMANDES   ","black","yellow")->newline()->newline();
-		$this->printStyle("  -version ","green","",true)->print("           Donne la version actuelle")->newline();
-		$this->printStyle("  create ","green","",true)->print("             Créer un nouveau projet");
+		$this->printStyle("  create ","green","",true)->print("             Créer un nouveau projet")->newline();
+		$this->printStyle("  -v ","green","",true)->print("                 Donne la version actuelle")->newline();
+		$this->printStyle("  update ","green","",true)->print("             Met a jour le CLI")->newline();
+		$this->printStyle("  uninstall ","green","",true)->print("          Desinstalle le CLI du terminal")->newline();
 	}
 	public function create($argv){
 			$this->clear();
@@ -225,7 +228,7 @@ public function version(){
 			$this->newline()->printStyle("ø Cancelling, this path is already used","red");
 			return false;
 	}
-	private function iniSystemPath(){
+	public function iniSystemPath(){
 		$a='"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path';
 		$b='reg query '.$a;
 		$handle = popen($b, 'r');
@@ -233,8 +236,8 @@ public function version(){
 		$r = fread($handle, 2096);
 		$sysPath=trim(explode("    ",$r)[3]??"");
 		pclose($handle);
-		if(!str_contains($sysPath, CLI."\;")&&!str_contains(exec('echo %path%'), CLI."\;")){
-			$sysPath.=CLI."\;";
+		if(!str_contains($sysPath, CLIDIR."\;")&&!str_contains(exec('echo %path%'), CLIDIR."\;")){
+			$sysPath.=CLIDIR."\;";
 			if($sysPath[strlen($sysPath)-1]==";"){
 				exec('reg add '.$a.' /d "'.$sysPath.'" /f');
 				exec('setx /m PATH "'.$sysPath.'"');
@@ -254,8 +257,8 @@ public function version(){
 		$r = fread($handle, 2096);
 		$sysPath=trim(explode("    ",$r)[3]);
 		pclose($handle);
-		if(str_contains($sysPath, CLI."\;")){
-			$sysPath=str_replace(CLI."\;","",$sysPath);
+		if(str_contains($sysPath, CLIDIR."\;")){
+			$sysPath=str_replace(CLIDIR."\;","",$sysPath);
 			if($sysPath[strlen($sysPath)-1]==";"){
 				exec('reg add '.$a.' /d "'.$sysPath.'" /f');
 				exec('setx /m PATH "'.$sysPath.'"');
@@ -289,7 +292,7 @@ class update extends gitInfo{
 			if(!$this->extractUpdate($lastV)){
 				return false;
 			}
-			$this->newline()->printStyle("Mise a jour termine","green");
+			$this->newline()->printStyle("Mise a jour terminee","green");
 			return true;
 		}
 	}
