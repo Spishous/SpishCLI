@@ -249,7 +249,7 @@ public function version(){
 		}
 		return false;
 	}
-	private function uninstall(){
+	public function uninstall(){
 		$a='"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path';
 		$b='reg query '.$a;
 		$handle = popen($b, 'r');
