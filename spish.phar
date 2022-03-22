@@ -243,7 +243,7 @@ class gitInfo extends script_object{
 		return str_replace(" ","-",$json["name"])??"";
 	}
 	private function getInfoUpdate(){
-		$url="https://api.github.com/repos/".GIT."/releases";
+		$url="https://api.github.com/repos/".GIT."/releases/latest";
 		$ua="node.js";
 		$ch = curl_init();
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -253,7 +253,7 @@ class gitInfo extends script_object{
         $head = curl_exec($ch);
         curl_close($ch);
         $json=json_decode($head,true);
-        return $json=$json[sizeof($json)-1];
+        return $json;
 	}
 }
 class update extends gitInfo{
