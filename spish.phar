@@ -2,7 +2,7 @@
 <?php
 define("GIT","Spishous/SpishCLI");
 define("CLI", "spish");
-define("VERSION","1.0.7");
+define("VERSION","1.0.8");
 define("FOLDER", getcwd());
 define("CLIDIR", dirname(__FILE__));
 define("ARGV", $argv);
@@ -321,8 +321,8 @@ class update extends gitInfo{
 		}
 		rmdir($folderMoveUpPath);
 	}
-	moveFileToParent("'.$destination_dir.'\\'.$nameRelease.'");
-	unlink("'.$destination_dir.'\\\update.phar");';
+	moveFileToParent(\''.$destination_dir.'\\'.$nameRelease.'\');
+	unlink(\''.$destination_dir.'\\\update.phar\');';
 		fwrite($update, $content);
 		fclose($update);
 	}
