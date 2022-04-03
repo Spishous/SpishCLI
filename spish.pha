@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
-define("GIT","Spishous/SpishCLI");
-define("CLI", "spish");
-define("VERSION","1.0.8");
+const GIT = "Spishous/SpishCLI";
+const CLI = "spish";
+const VERSION = "1.0.9";
 define("FOLDER", getcwd());
 define("CLIDIR", dirname(__FILE__));
 define("ARGV", $argv);
@@ -125,23 +125,26 @@ class script_object {
 
     // Returns all background color names
     public function getBackgroundColors() { return array_keys($this->background_colors); }
-    public function clear(){
+    public function clear(): static
+    {
         echo "\n";
         echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
 		return $this;
     }
-    public function newline(){
+    public function newline(): static
+    {
         echo "\n";
 		return $this;
     }
     public function hideKey(){ system('stty -echo'); }
     public function showKey(){ system('stty echo'); }
-	public function inputbool($prompt = '') {
+	public function inputBool($prompt = ''): bool
+    {
 		$prompt && print $prompt." ";
 		$this->printStyle("(y/n) ","green");
 		$bool=strtolower($this->input());
 		if($bool!=="n"&&$bool!=="y"&&$bool!=="no"&&$bool!=="yes"){
-			$bool=$this->inputbool();
+			$bool=$this->inputBool();
 		}
 		if($bool=="yes"||$bool=="y"){
 			return true;
@@ -202,7 +205,7 @@ class command extends gitInfo{
 			$this->printStyle("[    New Project    ]","dark_gray","",true)->newline()->newline();
 			$name=$this->printStyle("Project name : ","yellow")->input();
 			$path=FOLDER.'\\'.$name;
-			if($this->printStyle("Create project in ","yellow")->printStyle($path,"yellow","",true,true,true)->printStyle(" ? ","yellow")->inputbool()){
+			if($this->printStyle("Create project in ","yellow")->printStyle($path,"yellow","",true,true,true)->printStyle(" ? ","yellow")->inputBool()){
 				//$pathProject=$this->input("path: ");
 				$this->generateProject($name,$path);
 			}else{

@@ -1,5 +1,5 @@
 @echo OFF
-:: in case DelayedExpansion is on and a path contains ! 
+:: in case DelayedExpansion is on and a path contains !
 setlocal DISABLEDELAYEDEXPANSION
-php "%~dp0spish.phar" %*
+php "%~dp0spish.pha" %*
 
