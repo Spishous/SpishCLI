@@ -229,6 +229,7 @@ class command extends gitInfo{
 		usleep(100);
 		$r = fread($handle, 2096);
 		$sysPath=trim(explode("    ",$r)[3]??"");
+		if($sysPath[strlen($sysPath)-1]!==";") $sysPath .= ";";
 		pclose($handle);
 		if(!str_contains($sysPath, CLIDIR."\;")&&!str_contains(exec('echo %path%'), CLIDIR."\;")){
 			$sysPath.=CLIDIR."\;";
