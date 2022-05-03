@@ -2,7 +2,7 @@
 <?php
 const GIT = "Spishous/SpishCLI";
 const CLI = "spish";
-const VERSION = "1.1.0";
+const VERSION = "1.1.1";
 define("FOLDER", getcwd());
 define("CLIDIR", dirname(__FILE__));
 define("ARGV", $argv);
@@ -127,24 +127,30 @@ abstract class command extends gitInfo{
         $b='reg query '.$a;
         $handle = popen($b, 'r');
         usleep(100);
-        $r = fread($handle, 2096);
+        $r = fread($handle,10000);
+				usleep(500);
+				pclose($handle);
         $sysPath=trim(explode("    ",$r)[3]??"");
-        if($sysPath[strlen($sysPath)-1]!==";") $sysPath .= ";";
-        pclose($handle);
-        if(!str_contains($sysPath, CLIDIR."\;")&&!str_contains(exec('echo %path%'), CLIDIR."\;")){
-            $sysPath.=CLIDIR."\;";
-            if($sysPath[strlen($sysPath)-1]==";"){
-                exec('reg add '.$a.' /d "'.$sysPath.'" /f');
-                exec('setx /m PATH "'.$sysPath.'"');
-                exec('set path="'.$sysPath.'"');
-                echo "Command CLI installed\n";
-                system("pause");
-                return true;
-            }
-        }
-        echo "Command CLI \"".CLI."\" already installed\n";
-        return false;
+				try{
+					if($sysPath[strlen($sysPath)-1]!==";") $sysPath .= ";";
+					
+					if(!str_contains($sysPath, CLIDIR."\;")&&!str_contains(exec('echo %path%'), CLIDIR."\;")){
+							$sysPath.=CLIDIR."\;";
+							if($sysPath[strlen($sysPath)-1]==";"){
+									exec('reg add '.$a.' /d "'.$sysPath.'" /f');
+									exec('setx /m PATH "'.$sysPath.'"');
+									exec('set path="'.$sysPath.'"');
+									echo "Command CLI installed\n";
+									system("pause");
+									return true;
+							}
+					}
+					return false;
+				}catch(Error $e){
+					return $this->iniSystemPath();
+				}
     }
+		
 
     public function uninstall(){
         $a='"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path';
